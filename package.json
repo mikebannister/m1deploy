@@ -1,0 +1,12 @@
+{ "name": "m1deploy",
+  "version": "0.0.1",
+  "description": "Minimal deployment tool",
+  "author": "Mike Bannister <mike@mike101.net>",
+  "dependencies": {
+    "socket.io": "latest",
+    "underscore": "latest",
+    "node-logger": "latest",
+    "express": "latest",
+    "ejs": "latest"
+  }
+}

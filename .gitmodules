@@ -1,0 +1,9 @@
+[submodule "expresso"]
+	path = expresso
+	url = https://github.com/visionmedia/expresso.git
+[submodule "support/expresso"]
+	path = support/expresso
+	url = https://github.com/visionmedia/expresso.git
+[submodule "support/Sinon.JS"]
+	path = support/Sinon.JS
+	url = https://github.com/cjohansen/Sinon.JS.git
