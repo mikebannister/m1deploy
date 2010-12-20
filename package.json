@@ -2,8 +2,13 @@
   "version": "0.0.1",
   "description": "Minimal deployment tool",
   "author": "Mike Bannister <mike@mike101.net>",
+  "scripts": {
+    "start": "make start",
+    "test": "make test"
+  },
   "dependencies": {
     "socket.io": "latest",
+    "step": "latest",
     "underscore": "latest",
     "node-logger": "latest",
     "express": "latest",
