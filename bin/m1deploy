@@ -72,6 +72,10 @@ appManager.on('configRemove', function(app) {
   processEvent('app', 'configRemove', app);
 });
 
+appManager.on('configUpdate', function(app) {
+  processEvent('app', 'configUpdate', app);
+});
+
 appManager.on('prepareComplete', function(app) {
   processEvent('app', 'prepareComplete', app);
 });
