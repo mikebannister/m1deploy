@@ -27,31 +27,31 @@ module.exports = {
     var LocalDeploymentMock = sinon.mock(LocalDeployment);
     
     var prepareExpectation = LocalDeploymentMock.expects('prepare');
-    prepareExpectation.exactly(6);
+    prepareExpectation.exactly(7);
     prepareExpectation.callsArg(0);
         
     var verifyExpectation = LocalDeploymentMock.expects('verify');
-    verifyExpectation.exactly(6);
+    verifyExpectation.exactly(7);
     verifyExpectation.callsArg(0);
   
     var activateExpectation = LocalDeploymentMock.expects('activate');
-    activateExpectation.exactly(6);
+    activateExpectation.exactly(7);
     activateExpectation.callsArg(0);
         
     // specify the order of expected events
     var expectedEvents = [
       'newListener',
       'configAdd', 'configAdd', 'configAdd', 
-      'configAdd', 'configAdd', 'configAdd',
+      'configAdd', 'configAdd', 'configAdd', 'configAdd',
       'queueReady',
       'prepareComplete', 'prepareComplete', 'prepareComplete', 
-      'prepareComplete', 'prepareComplete', 'prepareComplete',
+      'prepareComplete', 'prepareComplete', 'prepareComplete', 'prepareComplete',
       'prepareQueueComplete',
       'verifyComplete', 'verifyComplete', 'verifyComplete', 
-      'verifyComplete', 'verifyComplete', 'verifyComplete',
+      'verifyComplete', 'verifyComplete', 'verifyComplete', 'verifyComplete',
       'verifyQueueComplete',
       'activateComplete', 'activateComplete', 'activateComplete', 
-      'activateComplete', 'activateComplete', 'activateComplete',
+      'activateComplete', 'activateComplete', 'activateComplete', 'activateComplete',
       'activateQueueComplete'
     ];
     
@@ -102,17 +102,17 @@ module.exports = {
     
     var prepareExpectation = LocalDeploymentMock.expects('prepare');
     // once for each config plus one for when the config changes
-    prepareExpectation.exactly(7);
+    prepareExpectation.exactly(8);
     prepareExpectation.callsArg(0);
         
     var verifyExpectation = LocalDeploymentMock.expects('verify');
     // once for each config plus one for when the config changes
-    verifyExpectation.exactly(7);
+    verifyExpectation.exactly(8);
     verifyExpectation.callsArg(0);
     
     var activateExpectation = LocalDeploymentMock.expects('activate');
     // once for each config plus one for when the config changes
-    activateExpectation.exactly(7);
+    activateExpectation.exactly(8);
     activateExpectation.callsArg(0);
     
     // specify the order of expected events
@@ -147,13 +147,13 @@ module.exports = {
           if (err) throw err;
           // fast forward to 5 seconds from now
           clock.tick(5000);
+          // stop the app manager
+          appManager.scheduler.stop();
           appManager.on('configUpdate', function(app) {
-            // stop the app manager
-            appManager.scheduler.stop();
             // verify expectations
             LocalDeploymentMock.verify();
             // fast forwad because we don't care what happened before the configUpdate event fired
-            var fastFowardPoint = 29;
+            var fastFowardPoint = 33;
             // check actual events against expected events
             for (var i = 0; i < expectedEvents.length; i++) {
               var expectedEventName = expectedEvents[i];
@@ -193,17 +193,17 @@ module.exports = {
     
     var prepareExpectation = LocalDeploymentMock.expects('prepare');
     // once for each config plus one for when the config changes
-    prepareExpectation.exactly(6);
+    prepareExpectation.exactly(7);
     prepareExpectation.callsArg(0);
         
     var verifyExpectation = LocalDeploymentMock.expects('verify');
     // once for each config plus one for when the config changes
-    verifyExpectation.exactly(6);
+    verifyExpectation.exactly(7);
     verifyExpectation.callsArg(0);
     
     var activateExpectation = LocalDeploymentMock.expects('activate');
     // once for each config plus one for when the config changes
-    activateExpectation.exactly(6);
+    activateExpectation.exactly(7);
     activateExpectation.callsArg(0);
     
     var prepareExpectation = LocalDeploymentMock.expects('remove');
@@ -232,4 +232,73 @@ module.exports = {
       });
     });
   },
+  'lookup apps by repository url': function(fn) {
+    // get things started
+    var appManager = new AppManager();
+    
+    // spy on all emitted events
+    sinon.spy(appManager, 'emit');
+    
+    // mock up LocalDeployment mostly because it does messy stuff
+    // but we're also going to check to make sure it's members get called
+    var LocalDeploymentMock = sinon.mock(LocalDeployment);
+    
+    var prepareExpectation = LocalDeploymentMock.expects('prepare');
+    // once for each config plus one for when the config changes
+    prepareExpectation.exactly(7);
+    prepareExpectation.callsArg(0);
+        
+    var verifyExpectation = LocalDeploymentMock.expects('verify');
+    // once for each config plus one for when the config changes
+    verifyExpectation.exactly(7);
+    verifyExpectation.callsArg(0);
+    
+    var activateExpectation = LocalDeploymentMock.expects('activate');
+    // once for each config plus one for when the config changes
+    activateExpectation.exactly(7);
+    activateExpectation.callsArg(0);
+    
+    appManager.on('activateQueueComplete', function(app) {
+      appManager.removeAllListeners('activateQueueComplete');
+      // stop the app manager
+      appManager.scheduler.stop();
+      // verify expectations
+      LocalDeploymentMock.verify();
+
+      // make sure looked up apps are valid
+      assert.eql(appManager.lookupByUrl('https://github.com/mikebannister/m1deploy.git').length, 1);
+      assert.eql(appManager.lookupByUrl('https://github.com/mikebannister/m1deploy.git')[0].name, 'm1deploy');
+      assert.ok(appManager.lookupByUrl('https://github.com/mikebannister/m1deploy.git')[0] instanceof App);
+
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git').length, 2);
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0] instanceof App);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].name, 'derridaApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].user, 'derrida');
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1] instanceof App);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1].name, 'derridaApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1].user, 'lulu');
+
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git').length, 1);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git')[0].name, 'yngwieApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git')[0].user, 'yngwie');
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git')[0] instanceof App);
+
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/mikeApp.git').length, 1);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/mikeApp.git')[0].name, 'mikeApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/mikeApp.git')[0].user, 'mike');
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/mikeApp.git')[0] instanceof App);
+
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/rebeccaApp.git').length, 1);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/rebeccaApp.git')[0].name, 'rebeccaApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/rebeccaApp.git')[0].user, 'rebecca');
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/rebeccaApp.git')[0] instanceof App);
+
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/luluApp.git').length, 1);
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/luluApp.git')[0].name, 'luluApp');
+      assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/luluApp.git')[0].user, 'lulu');
+      assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/luluApp.git')[0] instanceof App);
+
+      tearDown(fn);
+    });
+  }
 };

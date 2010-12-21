@@ -1,5 +1,5 @@
 test:
-	@NODE_ENV=test ./support/expresso/bin/expresso --serial test/*.test.js
+	@NODE_ENV=test ./support/expresso/bin/expresso --serial --timeout 5000 test/*.test.js
 
 coverage:
 	rm -rf ./lib-cov
