@@ -1,6 +1,6 @@
 { "name": "m1deploy",
   "version": "0.0.1",
-  "description": "Minimal deployment tool",
+  "description": "Minimal Node.js app deployment tool",
   "author": "Mike Bannister <mike@mike101.net>",
   "scripts": {
     "start": "make start",
