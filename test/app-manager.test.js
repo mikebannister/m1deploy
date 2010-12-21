@@ -3,6 +3,7 @@ var common = require('./common'),
     App = require('app').App,
     LocalDeployment = require('deploy-recipes').LocalDeployment,
     AppManager = require('app-manager').AppManager,
+    Scheduler = require('scheduler').Scheduler,
     fakeTimers = require('sinon/util/fake_timers');
 
 var tearDown = function(fn) {
@@ -42,7 +43,7 @@ module.exports = {
       'newListener',
       'configAdd', 'configAdd', 'configAdd', 
       'configAdd', 'configAdd', 'configAdd',
-      'fetchComplete',
+      'queueReady',
       'prepareComplete', 'prepareComplete', 'prepareComplete', 
       'prepareComplete', 'prepareComplete', 'prepareComplete',
       'prepareQueueComplete',
@@ -94,7 +95,7 @@ module.exports = {
     
     // spy on all emitted events
     sinon.spy(appManager, 'emit');
-
+  
     // mock up LocalDeployment mostly because it does messy stuff
     // but we're also going to check to make sure it's members get called
     var LocalDeploymentMock = sinon.mock(LocalDeployment);
@@ -178,9 +179,57 @@ module.exports = {
     });
   },
   'fires lifecycle events when a config is deleted': function(fn) {
-    fn();
+    // get things started
+    var appManager = new AppManager();
+    
+    // spy on all emitted events
+    sinon.spy(appManager, 'emit');
+    // use a fake clock
+    var clock = fakeTimers.useFakeTimers();
+    
+    // mock up LocalDeployment mostly because it does messy stuff
+    // but we're also going to check to make sure it's members get called
+    var LocalDeploymentMock = sinon.mock(LocalDeployment);
+    
+    var prepareExpectation = LocalDeploymentMock.expects('prepare');
+    // once for each config plus one for when the config changes
+    prepareExpectation.exactly(6);
+    prepareExpectation.callsArg(0);
+        
+    var verifyExpectation = LocalDeploymentMock.expects('verify');
+    // once for each config plus one for when the config changes
+    verifyExpectation.exactly(6);
+    verifyExpectation.callsArg(0);
+    
+    var activateExpectation = LocalDeploymentMock.expects('activate');
+    // once for each config plus one for when the config changes
+    activateExpectation.exactly(6);
+    activateExpectation.callsArg(0);
+    
+    var prepareExpectation = LocalDeploymentMock.expects('remove');
+    prepareExpectation.exactly(1);
+  
+    appManager.on('activateQueueComplete', function(app) {
+      appManager.removeAllListeners('activateQueueComplete');
+      // simulate the conf file changing
+      var yngwieConfPath = path.join(path.dirname(process.env.HOME), 'yngwie', '.m1deploy.cfg');
+      rmdirAndChildren(yngwieConfPath, function() {
+        // 5s is the default polling interval
+        clock.tick(5000);
+        appManager.on('configRemove', function(app) {
+          // stop the app manager
+          appManager.scheduler.stop();
+          // verify expectations
+          LocalDeploymentMock.verify();
+          // make sure event returned an App instance
+          assert.ok(app instanceof App, "expected an instance of App but received a '" + (typeof actualEventFirstArgument) + "' instead");
+          // cleanup
+          tearDown(function() {
+            clock.restore();
+            fn();
+          });
+        });
+      });
+    });
   },
-  //'initializes a scheduler': function(fn) {
-  //  tearDown(fn);
-  //}
 };
