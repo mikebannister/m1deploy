@@ -25,7 +25,7 @@ var repositoryListener = new RepositoryListener(webApp, appManager);
 webApp.use(express.router);
 
 // setup template engine
-webApp.set('views', __dirname + '/views');
+webApp.set('views', __dirname + '/../lib/views');
 webApp.register('.html', require('ejs'));
 webApp.set('view engine', 'html');
 
