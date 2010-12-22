@@ -16,12 +16,15 @@ var fakeRoot;
 
 buildFakeFilesystem = exports.buildFakeFilesystem = function(fn) {
   fakeRoot = fakeHomeRoot + fsCount;
-  // make a copy
-  copy(fakeHomeRoot, fakeRoot, function() {
-    // point HOME env variable at fake home di
-    process.env.HOME = path.join(fakeRoot, 'mike');
-    fsCount++;
-    fn();
+  // delete destination first, just in case
+  rmdirAndChildren(fakeRoot, function() {
+    // make a copy
+    copy(fakeHomeRoot, fakeRoot, function() {
+      // point HOME env variable at fake home di
+      process.env.HOME = path.join(fakeRoot, 'mike');
+      fsCount++;
+      fn();
+    });
   });
 };
 

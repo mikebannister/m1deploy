@@ -1,3 +1,5 @@
+//TODO--tests for when things go wrong
+
 var common = require('./common'),
     path = require('path'),
     App = require('app').App,
