@@ -17,7 +17,6 @@ module.exports = {
     initMockAppObjects();
     buildFakeFilesystem(fn);
   },
-
   'fires lifecycle events when new apps are discovered': function(fn) {
     // get things started
     var appManager = new AppManager();
@@ -220,12 +219,15 @@ module.exports = {
         assert.ok(appManager.lookupByUrl('https://github.com/mikebannister/m1deploy.git')[0] instanceof App);
   
         assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git').length, 2);
+        
         assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0] instanceof App);
-        assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].name, 'derridaApp');
-        assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].user, 'derrida');
         assert.ok(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1] instanceof App);
+        assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].name, 'derridaApp');
         assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1].name, 'derridaApp');
-        assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1].user, 'lulu');
+        var user1 = appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[0].user;
+        assert.ok(user1 === 'derrida' || user1 === 'rebecca');
+        var user2 = appManager.lookupByUrl('https://github.com/m1deploy/derridaApp.git')[1].user;
+        assert.ok(user1 === 'derrida' || user2 === 'rebecca');
   
         assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git').length, 1);
         assert.eql(appManager.lookupByUrl('https://github.com/m1deploy/yngwieApp.git')[0].name, 'yngwieApp');

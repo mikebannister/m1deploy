@@ -31,25 +31,11 @@ module.exports = {
     var appManager = new AppManager();
     var repositoryListener = new RepositoryListener(webApp, appManager);
     
-    // routing middleware
-    webApp.use(express.router);
-    
     // setup template engine
     webApp.set('views', __dirname + '/../lib/views');
     webApp.register('.html', require('ejs'));
     webApp.set('view engine', 'html');
     
-    webApp.get('/', function(req, res) {
-      res.render('dashboard',{
-        locals: {
-          events: events,
-          port: port
-        }
-      });
-    });
-    
-    // stop the manager
-    appManager.scheduler.stop();
     assert.response(webApp, {
       url: '/notify/',
       method: 'POST',
@@ -62,6 +48,8 @@ module.exports = {
       status: 200
     }, function(res) {
       assert.eql(res.body, '{"ok": true}');
+      // stop the manager
+      appManager.scheduler.stop();
       tearDown(fn);
     });
   }
