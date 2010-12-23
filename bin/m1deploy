@@ -90,11 +90,5 @@ repositoryListener.on('commit', function(apps) {
   });
 });
 
-var listening = false;
-appManager.on('queueReady', function() {
-  if (!listening) {
-    listening = true;
-    webApp.listen(port);
-    console.log('m1deploy running at http://127.0.0.1:' + port);
-  }
-});
+webApp.listen(port);
+console.log('m1deploy running at http://127.0.0.1:' + port);
