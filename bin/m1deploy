@@ -85,7 +85,6 @@ appManager.on('activateComplete', function(app) {
 
 repositoryListener.on('commit', function(apps) {
   _(apps).each(function(app) {
-    appManager.redeploy(app);
     processEvent('repository', 'commit', app);
   });
 });
