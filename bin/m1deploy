@@ -42,11 +42,6 @@ webAppSocket = io.listen(webApp);
 webAppSocket.on('connection', function(client) {});
 
 var dumpEvent = function(module, action, app) {
-  //console.log('-----------------------------------------------');
-  //console.log('app: ' + app.name);
-  //console.log('user: ' + app.user);
-  //console.log('module: ' + module);
-  //console.log('action: ' + action);
   console.log(action + ' app::' + app.name + ', user::' + app.user);
 };
 

@@ -2,7 +2,8 @@ require.paths.push(__dirname + '/../dep/Sinon.JS/lib');
 
 var fs = require('fs'),
     path = require('path'),
-    dep = require('../support');
+    dep = require('../support')
+    App = require('app').App;
 
 global.assert = require('assert');
 global.sinon = require('sinon');
@@ -34,4 +35,27 @@ buildFakeFilesystem = exports.buildFakeFilesystem = function(fn) {
 
 destroyFakeFilesystem = exports.destroyFakeFilesystem = function(fn) {
   rmdirAndChildren(fakeRoot, fn);
+};
+
+initMockAppObjects = exports.initMockAppObjects = function() {
+  App.prototype.prepare = function(fn) {
+    App.prototype.prepare.callCount++;
+    fn();
+  };
+  App.prototype.verify = function(fn) {
+    App.prototype.verify.callCount++;
+    fn();
+  };
+  App.prototype.activate = function(fn) {
+    App.prototype.activate.callCount++;
+    fn();
+  };
+  App.prototype.remove = function(fn) {
+    App.prototype.remove.callCount++;
+    fn();
+  };
+  App.prototype.prepare.callCount = 0;
+  App.prototype.verify.callCount = 0;
+  App.prototype.activate.callCount = 0;
+  App.prototype.remove.callCount = 0;
 };

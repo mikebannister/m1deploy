@@ -14,50 +14,31 @@ var tearDown = function(fn) {
 
 module.exports = {
   setup: function(fn) {
+    initMockAppObjects();
     buildFakeFilesystem(fn);
   },
   
   'accepts web requests': function(fn) {
-    
-    // mock up LocalDeployment mostly because it does messy stuff
-    // but we're also going to check to make sure it's members get called
-    var LocalDeploymentMock = sinon.mock(LocalDeployment);
-    
-    var prepareExpectation = LocalDeploymentMock.expects('prepare');
-    // once for each config plus one for when the config changes
-    prepareExpectation.exactly(7);
-    prepareExpectation.callsArg(0);
-        
-    var verifyExpectation = LocalDeploymentMock.expects('verify');
-    // once for each config plus one for when the config changes
-    verifyExpectation.exactly(7);
-    verifyExpectation.callsArg(0);
-    
-    var activateExpectation = LocalDeploymentMock.expects('activate');
-    // once for each config plus one for when the config changes
-    activateExpectation.exactly(7);
-    activateExpectation.callsArg(0);
-    
     var webApp = express.createServer();
     var port = 5542;
     var events = [];
     var webAppSocket;
-
+    
     // setup web app
     webApp.use(express.bodyDecoder());
     webApp.use(express.methodOverride());
-
+    
     var appManager = new AppManager();
     var repositoryListener = new RepositoryListener(webApp, appManager);
-
+    
     // routing middleware
     webApp.use(express.router);
-
+    
     // setup template engine
     webApp.set('views', __dirname + '/../lib/views');
     webApp.register('.html', require('ejs'));
     webApp.set('view engine', 'html');
-
+    
     webApp.get('/', function(req, res) {
       res.render('dashboard',{
         locals: {
@@ -66,7 +47,7 @@ module.exports = {
         }
       });
     });
-
+    
     assert.response(webApp, {
       url: '/notify/',
       method: 'POST',
@@ -79,8 +60,6 @@ module.exports = {
       status: 200
     }, function(res) {
       assert.eql(res.body, '{"ok": true}');
-      // verify expectations
-      LocalDeploymentMock.verify();
       // stop the manager
       appManager.scheduler.stop();
       tearDown(fn);
