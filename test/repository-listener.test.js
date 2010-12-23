@@ -48,6 +48,8 @@ module.exports = {
       });
     });
     
+    // stop the manager
+    appManager.scheduler.stop();
     assert.response(webApp, {
       url: '/notify/',
       method: 'POST',
@@ -60,8 +62,6 @@ module.exports = {
       status: 200
     }, function(res) {
       assert.eql(res.body, '{"ok": true}');
-      // stop the manager
-      appManager.scheduler.stop();
       tearDown(fn);
     });
   }

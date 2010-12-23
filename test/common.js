@@ -2,6 +2,8 @@ require.paths.push(__dirname + '/../dep/Sinon.JS/lib');
 
 var fs = require('fs'),
     path = require('path'),
+    exec  = require('child_process').exec,
+    sys = require('sys'),
     dep = require('../support')
     App = require('app').App;
 
@@ -21,20 +23,25 @@ buildFakeFilesystem = exports.buildFakeFilesystem = function(fn) {
   // this gets created by another process sometimes, deleting for safely
   var deployDir = path.join(fakeHomeRoot, fakeAdmin, '.m1deploy');
   var cleanDirs = [deployDir, fakeRoot];
-  // delete destination first, just in case
-  rmdirAndChildren(cleanDirs, function() {
-    // make a copy
-    copy(fakeHomeRoot, fakeRoot, function() {
-      // point HOME env variable at fake home di
-      process.env.HOME = path.join(fakeRoot, fakeAdmin);
-      fsCount++;
-      fn();
+  var cmd = 'rm -rf ' + deployDir;
+  exec(cmd, function(err, stdout, stderr) {
+    cmd = 'rm -rf ' + fakeRoot;
+    exec(cmd, function(err, stdout, stderr) {
+      cmd = 'cp -r ' + fakeHomeRoot + ' ' + fakeRoot;
+      exec(cmd, function(err, stdout, stderr) {
+        process.env.HOME = path.join(fakeRoot, fakeAdmin);
+        fsCount++;
+        fn();
+      });
     });
   });
 };
 
 destroyFakeFilesystem = exports.destroyFakeFilesystem = function(fn) {
-  rmdirAndChildren(fakeRoot, fn);
+  var cmd = 'rm -rf ' + fakeRoot;
+  exec(cmd, function (error, stdout, stderr) {
+    fn();
+  });
 };
 
 initMockAppObjects = exports.initMockAppObjects = function() {
